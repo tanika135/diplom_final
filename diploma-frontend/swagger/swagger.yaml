@@ -32,6 +32,8 @@ paths:
       responses:
         '200':
           description: successful operation
+        '500':
+          description: unsuccessful operation
 
 
   /sign-up:
@@ -61,6 +63,8 @@ paths:
       responses:
         '200':
           description: successful operation
+        '500':
+          description: unsuccessful operation
 
   /sign-out:
     post:
@@ -672,9 +676,7 @@ components:
           xml:
             wrapped: true
           items:
-            type: string
-            xml:
-              name: imageUrl
+            $ref: '#/components/schemas/Image'
     ProductFull:
       required:
         - id
@@ -718,9 +720,7 @@ components:
           xml:
             wrapped: true
           items:
-            type: string
-            xml:
-              name: imageUrl
+            $ref: '#/components/schemas/Image'
         tags:
           type: array
           xml:
