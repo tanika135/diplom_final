@@ -322,24 +322,7 @@ def orders(request):
 		]
 		return JsonResponse(data, safe=False)
 
-def signIn(request):
-	if request.method == "POST":
-		body = json.loads(request.body)
-		username = body['username']
-		password = body['password']
-		user = authenticate(request, username=username, password=password)
-		if user is not None:
-			login(request, user)
-			return HttpResponse(status=200)
-		else:
-			return HttpResponse(status=500)
 
-def signUp(request):
-	return HttpResponse(status=200)
-
-def signOut(request):
-	logout(request)
-	return HttpResponse(status=200)
 
 def product(request, id):
 	data = {
