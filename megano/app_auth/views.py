@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpRequest
 import json
 from django.contrib.auth import authenticate, login, logout
+
+from .forms import AvatarForm
 from .models import Profile
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -47,13 +49,22 @@ def sign_out(request):
     return HttpResponse(status=200)
 
 
-@login_required(redirect_field_name='next', login_url='/sign-up/')
-def profile(request):
+def get_profile(request):
     user = request.user
     if user is None:
-        return HttpResponse(status=401)
+        return None
 
     profile = Profile.objects.get(user=user)
+    if not profile:
+        return None
+
+    return profile
+
+
+@login_required(redirect_field_name='next', login_url='/sign-up/')
+def profile(request):
+
+    profile = get_profile(request)
     if not profile:
         return HttpResponse(status=400)
 
@@ -64,7 +75,7 @@ def profile(request):
             "email": profile.email,
             "phone": profile.phone_number.as_e164,
             "avatar": {
-                "src": profile.avatar.url,
+                "src": profile.avatar.avatar.url,
                 "alt": profile.name,
             }
         }
@@ -87,7 +98,7 @@ def profile(request):
             "email": profile.email,
             "phone": profile.phone_number.as_e164,
             "avatar": {
-                "src": "https://proprikol.ru/wp-content/uploads/2020/12/kartinki-ryabchiki-14.jpg",
+                "src": profile.avatar.avatar.url,
                 "alt": "hello alt",
             }
         }
@@ -98,3 +109,29 @@ def profile(request):
 
 def profile_password(request):
     return HttpResponse(status=200)
+
+
+@login_required(redirect_field_name='next', login_url='/sign-up/')
+def profile_avatar(request):
+    profile = get_profile(request)
+    if not profile:
+        return HttpResponse(status=400)
+    elif request.method == 'POST':
+
+        avatar_form = AvatarForm(request.POST, request.FILES)
+        if avatar_form.is_valid():
+            # TODO: сделать удаление старых автарок
+            profile.avatar = avatar_form.save()
+            profile.save()
+
+            data = {
+                "src": profile.avatar.avatar.url,
+                "alt": profile.name,
+            }
+            return JsonResponse(data)
+        else:
+            print(avatar_form.errors)
+            return HttpResponse(status=400)
+
+    return HttpResponse(status=405)
+

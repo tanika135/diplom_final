@@ -7,6 +7,7 @@ from .views import (
     sign_out,
     profile,
     profile_password,
+    profile_avatar,
 )
 
 
@@ -18,4 +19,5 @@ urlpatterns = [
     path('sign-out', sign_out, name='sign-out'),
     path('profile', profile, name='profile'),
     path('profile/password', profile_password, name='profile-password'),
+    path('profile/avatar', profile_avatar, name='profile-password'),
 ]
