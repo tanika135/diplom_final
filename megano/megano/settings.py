@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'frontend',
+    'phonenumber_field',
     'app_auth',
     'api',
 ]

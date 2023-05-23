@@ -5,6 +5,8 @@ from .views import (
     sign_in,
     sign_up,
     sign_out,
+    profile,
+    profile_password,
 )
 
 
@@ -14,4 +16,6 @@ urlpatterns = [
     path('sign-in', sign_in, name='sign-in'),
     path('sign-up', sign_up, name='sign-up'),
     path('sign-out', sign_out, name='sign-out'),
+    path('profile', profile, name='profile'),
+    path('profile/password', profile_password, name='profile-password'),
 ]

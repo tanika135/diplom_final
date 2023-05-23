@@ -393,35 +393,6 @@ def productReviews(request, id):
 	]
 	return JsonResponse(data, safe=False)
 
-def profile(request):
-	if(request.method == 'GET'):
-		data = {
-			"fullName": "Annoying Orange",
-			"email": "no-reply@mail.ru",
-			"phone": "88002000600",
-			"avatar": {
-				"src": "https://proprikol.ru/wp-content/uploads/2020/12/kartinki-ryabchiki-14.jpg",
-				"alt": "hello alt",
-			}
-		}
-		return JsonResponse(data)
-
-	elif(request.method == 'POST'):
-		data = {
-			"fullName": "Annoying Green",
-			"email": "no-reply@mail.ru",
-			"phone": "88002000600",
-			"avatar": {
-				"src": "https://proprikol.ru/wp-content/uploads/2020/12/kartinki-ryabchiki-14.jpg",
-				"alt": "hello alt",
-			}
-		}
-		return JsonResponse(data)
-
-	return HttpResponse(status=500)
-
-def profilePassword(request):
-	return HttpResponse(status=200)
 
 def orders(request):
 	if(request.method == 'GET'):

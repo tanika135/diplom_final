@@ -13,8 +13,6 @@ urlpatterns = [
     path('product/<int:id>', views.product),
     path('product/<int:id>/reviews', views.productReviews),
     path('tags', views.tags),
-    path('profile', views.profile),
-    path('profile/password', views.profilePassword),
     path('order/<int:id>', views.order),
     path('payment/<int:id>', views.payment),
 ]

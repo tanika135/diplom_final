@@ -1,8 +1,10 @@
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpRequest
 import json
 from django.contrib.auth import authenticate, login, logout
 from .models import Profile
+from django.http import JsonResponse
 
 
 def sign_in(request):
@@ -40,4 +42,56 @@ def sign_up(request):
 
 def sign_out(request):
     logout(request)
+    return HttpResponse(status=200)
+
+
+@login_required(redirect_field_name='next', login_url='/sign-up/')
+def profile(request):
+    user = request.user
+    if user is None:
+        return HttpResponse(status=401)
+
+    elif request.method == 'GET':
+
+        data = {
+            "fullName": Profile.objects.get(user=user).name,
+            "email": Profile.objects.get(user=user).email,
+            "phone": Profile.objects.get(user=user).phone_number.as_e164,
+            "avatar": {
+                "src": "https://proprikol.ru/wp-content/uploads/2020/12/kartinki-ryabchiki-14.jpg",
+                "alt": "hello alt",
+            }
+        }
+
+        return JsonResponse(data)
+
+    elif request.method == 'POST':
+        profile = Profile.objects.get(user=user)
+        if not profile:
+            return HttpResponse(status=400)
+
+        body = json.loads(request.body)
+        name = body['fullName']
+        email = body['email']
+        phone = body['phone']
+        profile.name = name
+        profile.email = email
+        profile.phone_number = phone
+        profile.save()
+
+        data = {
+            "fullName": profile.name,
+            "email": profile.email,
+            "phone": profile.phone_number.as_e164,
+            "avatar": {
+                "src": "https://proprikol.ru/wp-content/uploads/2020/12/kartinki-ryabchiki-14.jpg",
+                "alt": "hello alt",
+            }
+        }
+        return JsonResponse(data)
+
+    return HttpResponse(status=405)
+
+
+def profile_password(request):
     return HttpResponse(status=200)
