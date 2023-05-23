@@ -5,8 +5,10 @@ import json
 from django.contrib.auth import authenticate, login, logout
 from .models import Profile
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 
+@csrf_exempt
 def sign_in(request):
     if request.method == "POST":
         body = json.loads(request.body)
@@ -51,24 +53,25 @@ def profile(request):
     if user is None:
         return HttpResponse(status=401)
 
+    profile = Profile.objects.get(user=user)
+    if not profile:
+        return HttpResponse(status=400)
+
     elif request.method == 'GET':
 
         data = {
-            "fullName": Profile.objects.get(user=user).name,
-            "email": Profile.objects.get(user=user).email,
-            "phone": Profile.objects.get(user=user).phone_number.as_e164,
+            "fullName": profile.name,
+            "email": profile.email,
+            "phone": profile.phone_number.as_e164,
             "avatar": {
-                "src": "https://proprikol.ru/wp-content/uploads/2020/12/kartinki-ryabchiki-14.jpg",
-                "alt": "hello alt",
+                "src": profile.avatar.url,
+                "alt": profile.name,
             }
         }
 
         return JsonResponse(data)
 
     elif request.method == 'POST':
-        profile = Profile.objects.get(user=user)
-        if not profile:
-            return HttpResponse(status=400)
 
         body = json.loads(request.body)
         name = body['fullName']
