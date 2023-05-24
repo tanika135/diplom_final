@@ -10,6 +10,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 
+
 @csrf_exempt
 def sign_in(request):
     if request.method == "POST":
@@ -107,8 +108,19 @@ def profile(request):
     return HttpResponse(status=405)
 
 
+@login_required(redirect_field_name='next', login_url='/sign-up/')
 def profile_password(request):
-    return HttpResponse(status=200)
+    if request.method == 'POST':
+        body = json.loads(request.body)
+        new_password = body['password']
+        if new_password:
+            user = User.objects.get(id=request.user.id)
+            user.set_password(new_password)
+            user.save()
+            return HttpResponse(status=200)
+        else:
+            return HttpResponse(status=400)
+    return HttpResponse(status=405)
 
 
 @login_required(redirect_field_name='next', login_url='/sign-up/')
@@ -120,7 +132,8 @@ def profile_avatar(request):
 
         avatar_form = AvatarForm(request.POST, request.FILES)
         if avatar_form.is_valid():
-            # TODO: сделать удаление старых автарок
+            if profile.avatar:
+                profile.avatar.delete()
             profile.avatar = avatar_form.save()
             profile.save()
 
