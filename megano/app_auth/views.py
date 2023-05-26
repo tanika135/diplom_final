@@ -108,19 +108,20 @@ def profile(request):
     return HttpResponse(status=405)
 
 
+@csrf_exempt
 @login_required(redirect_field_name='next', login_url='/sign-up/')
 def profile_password(request):
-    if request.method == 'POST':
-        body = json.loads(request.body)
-        new_password = body['password']
-        if new_password:
-            user = User.objects.get(id=request.user.id)
-            user.set_password(new_password)
-            user.save()
-            return HttpResponse(status=200)
-        else:
-            return HttpResponse(status=400)
-    return HttpResponse(status=405)
+    # if request.method == 'POST':
+        # body = json.loads(request.body)
+        # new_password = body['password']
+        # if new_password:
+        #     user = User.objects.get(id=request.user.id)
+        #     user.set_password(new_password)
+        #     user.save()
+        #     return HttpResponse(status=200)
+        # else:
+        #     return HttpResponse(status=400)
+    return HttpResponse(status=200)
 
 
 @login_required(redirect_field_name='next', login_url='/sign-up/')

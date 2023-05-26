@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django_cleanup',
     'phonenumber_field',
     'app_auth',
+    'app_catalog',
     'api',
 ]
 
