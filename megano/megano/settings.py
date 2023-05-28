@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'frontend',
     'django_cleanup',
     'phonenumber_field',
+    'mptt',
     'app_auth',
     'app_catalog',
     'api',

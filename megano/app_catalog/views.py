@@ -72,7 +72,7 @@ def product(request, id):
     if request.method == 'GET':
         data = {
             "id": product.id,
-            "category": 55,
+            "category": product.category.id,
             "price": product.price,
             "count": product.count,
             "date": product.date,

@@ -1,10 +1,16 @@
 from django.contrib import admin
-from app_catalog.models import Product
+from mptt.admin import MPTTModelAdmin
+
+from app_catalog.models import Product, Category
 
 
 class ProductsAdmin(admin.ModelAdmin):
     list_display = ['id', 'title', 'count', 'price']
 
 
-admin.site.register(Product, ProductsAdmin)
+class CategoryAdmin(MPTTModelAdmin):
+    list_display = ['id', 'title']
 
+
+admin.site.register(Product, ProductsAdmin)
+admin.site.register(Category, CategoryAdmin)
