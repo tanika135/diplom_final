@@ -2,6 +2,18 @@ from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 
 
+def images_dir_path(instance: "Product", filename: str) -> str:
+    return "products/product_{pk}/{filename}".format(
+        pk=instance.pk,
+        filename=filename
+    )
+
+
+class Images(models.Model):
+    images = models.ImageField(upload_to=images_dir_path, null=True, max_length=255)
+    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='images')
+
+
 class Product(models.Model):
     class Meta:
         ordering = ['title']
@@ -14,7 +26,7 @@ class Product(models.Model):
     fullDescription = models.TextField(max_length=1000, null=False, blank=True)
     freeDelivery = models.BooleanField(default=False)
     category = TreeForeignKey('Category', on_delete=models.PROTECT, related_name='products')
-    # images = models.OneToOneField(Image, on_delete=models.CASCADE)
+    # images = models.ForeignKey(Images, on_delete=models.CASCADE, null=True, related_name='product')
     # images = models.ImageField(upload_to='product_images_directory_path')
     # tags
     # reviews

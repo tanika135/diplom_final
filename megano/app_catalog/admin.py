@@ -1,11 +1,17 @@
 from django.contrib import admin
 from mptt.admin import MPTTModelAdmin
 
-from app_catalog.models import Product, Category
+from app_catalog.models import Product, Category, Images
+
+
+class ImageInline(admin.TabularInline):
+    fk_name = 'product'
+    model = Images
 
 
 class ProductsAdmin(admin.ModelAdmin):
     list_display = ['id', 'title', 'count', 'price']
+    inlines = [ImageInline,]
 
 
 class CategoryAdmin(MPTTModelAdmin):

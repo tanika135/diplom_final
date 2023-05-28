@@ -30,26 +30,7 @@ def categories(request):
         })
 
 
-    # data = [
-    #     {
-    #         "id": category.id,
-    #         "title": "video card",
-    #         "image": {
-    #             "src": "https://proprikol.ru/wp-content/uploads/2020/12/kartinki-ryabchiki-14.jpg",
-    #             "alt": "Image alt string"
-    #         },
-    #         "subcategories": [
-    #             {
-    #                 "id": 123,
-    #                 "title": "video card",
-    #                 "image": {
-    #                     "src": "https://proprikol.ru/wp-content/uploads/2020/12/kartinki-ryabchiki-14.jpg",
-    #                     "alt": "Image alt string"
-    #                 }
-    #             }
-    #         ]
-    #     }
-    # ]
+
     return JsonResponse(data, safe=False)
 
 
@@ -93,6 +74,14 @@ def product(request, id):
     product = get_product(1)
 
     if request.method == 'GET':
+        product_images = []
+        for image in product.images.all():
+            product_images.append({
+                "src": image.images.url,
+                "alt": product.title,
+            })
+
+
         data = {
             "id": product.id,
             "category": product.category.id,
@@ -103,12 +92,7 @@ def product(request, id):
             "description": product.description,
             "fullDescription": product.fullDescription,
             "freeDelivery": product.freeDelivery,
-            "images": [
-                    {
-                        "src": "https://proprikol.ru/wp-content/uploads/2020/12/kartinki-ryabchiki-14.jpg",
-                        "alt": "hello alt",
-                    }
-             ],
+            "images": product_images,
             "tags": [
                     {
                         "id": 0,
@@ -141,3 +125,5 @@ def get_product(product_id):
         return None
 
     return product
+
+
