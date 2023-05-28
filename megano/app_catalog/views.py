@@ -3,30 +3,53 @@ from random import randrange
 from django.http import JsonResponse
 from django.shortcuts import render
 
-from app_catalog.models import Product
+from app_catalog.models import Product, Category
 
 
 def categories(request):
-    data = [
-        {
-            "id": 123,
-            "title": "video card",
-            "image": {
-                "src": "https://proprikol.ru/wp-content/uploads/2020/12/kartinki-ryabchiki-14.jpg",
-                "alt": "Image alt string"
-            },
-            "subcategories": [
-                {
-                    "id": 123,
-                    "title": "video card",
-                    "image": {
-                        "src": "https://proprikol.ru/wp-content/uploads/2020/12/kartinki-ryabchiki-14.jpg",
-                        "alt": "Image alt string"
-                    }
-                }
-            ]
-        }
-    ]
+    categories = Category.objects.filter(parent=None)
+    data = []
+    for category in categories:
+        subcategories = []
+        for subcategory in category.children.all():
+            subcategories.append({
+                "id": subcategory.id,
+                "title": subcategory.title,
+                # "image": {
+                #     "src": "https://proprikol.ru/wp-content/uploads/2020/12/kartinki-ryabchiki-14.jpg",
+                #     "alt": "Image alt string"
+            })
+
+        data.append({
+            "id": category.id,
+            "title": category.title,
+            "subcategories": subcategories,
+            # "image": {
+            #     "src": "https://proprikol.ru/wp-content/uploads/2020/12/kartinki-ryabchiki-14.jpg",
+            #     "alt": "Image alt string"
+        })
+
+
+    # data = [
+    #     {
+    #         "id": category.id,
+    #         "title": "video card",
+    #         "image": {
+    #             "src": "https://proprikol.ru/wp-content/uploads/2020/12/kartinki-ryabchiki-14.jpg",
+    #             "alt": "Image alt string"
+    #         },
+    #         "subcategories": [
+    #             {
+    #                 "id": 123,
+    #                 "title": "video card",
+    #                 "image": {
+    #                     "src": "https://proprikol.ru/wp-content/uploads/2020/12/kartinki-ryabchiki-14.jpg",
+    #                     "alt": "Image alt string"
+    #                 }
+    #             }
+    #         ]
+    #     }
+    # ]
     return JsonResponse(data, safe=False)
 
 

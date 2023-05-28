@@ -14,6 +14,7 @@ class Product(models.Model):
     fullDescription = models.TextField(max_length=1000, null=False, blank=True)
     freeDelivery = models.BooleanField(default=False)
     category = TreeForeignKey('Category', on_delete=models.PROTECT, related_name='products')
+    # images = models.OneToOneField(Image, on_delete=models.CASCADE)
     # images = models.ImageField(upload_to='product_images_directory_path')
     # tags
     # reviews
