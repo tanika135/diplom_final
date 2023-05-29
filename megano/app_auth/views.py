@@ -1,18 +1,18 @@
-from typing import Callable
-
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpRequest
-from django.shortcuts import render, redirect
-from django.urls import reverse_lazy
 import json
 from django.contrib.auth import authenticate, login, logout
 
+from .forms import AvatarForm
+from .models import Profile
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 
 
-
-def signIn(request):
+@csrf_exempt
+def sign_in(request):
     if request.method == "POST":
         body = json.loads(request.body)
         username = body['username']
@@ -25,30 +25,127 @@ def signIn(request):
             return HttpResponse(status=403)
 
 
-def signUp(request):
-    # def get(self, request: HttpRequest) -> Callable:
-    #     form = RegisterForm()
-    #     return render(request, 'account/signup.html', context={'form': form})
-    #
-    # def post(self, request: HttpRequest) -> Callable:
-    #     """
-    #     Метод переопределен для слияния анонимной корзины
-    #     с корзиной аутентифицированного пользователя
-    #     """
-    #     form = RegisterForm(request.POST, request.FILES)
-    #     if form.is_valid():
-    #         # old_cart = CartService(self.request)
-    #         user = form.save()
-    #         reset_phone_format(instance=user)
-    #         login(request, get_auth_user(data=form.cleaned_data))
-    #         # new_cart = CartService(self.request)
-    #         # new_cart.merge_carts(old_cart)
-    #         return redirect('/')
-    #     return render(request, 'account/signup.html', context={'form': form})
+def sign_up(request):
+    if request.method == "POST":
+        body = json.loads(request.body)
+        name = body['name']
+        username = body['username']
+        password = body['password']
 
-    return HttpResponse(status=200)
+        if len(name) > 3 and len(username) > 3 and len(password) > 3:
+            user = User.objects.create_user(username, "", password)
+            if user is not None:
+                profile = Profile.objects.create(user=user, name=name)
+                if profile:
+                    login(request, user)
+                    return HttpResponse(status=200)
+
+        return HttpResponse(status=400)
+    else:
+        return HttpResponse(status=405)
 
 
-def signOut(request):
+def sign_out(request):
     logout(request)
     return HttpResponse(status=200)
+
+
+def get_profile(request):
+    user = request.user
+    if user is None:
+        return None
+
+    profile = Profile.objects.get(user=user)
+    if not profile:
+        return None
+
+    return profile
+
+
+@login_required(redirect_field_name='next', login_url='/sign-up/')
+def profile(request):
+
+    profile = get_profile(request)
+    if not profile:
+        return HttpResponse(status=400)
+
+    elif request.method == 'GET':
+
+        data = {
+            "fullName": profile.name,
+            "email": profile.email,
+            "phone": profile.phone_number.as_e164,
+            "avatar": {
+                "src": profile.avatar.avatar.url,
+                "alt": profile.name,
+            }
+        }
+
+        return JsonResponse(data)
+
+    elif request.method == 'POST':
+
+        body = json.loads(request.body)
+        name = body['fullName']
+        email = body['email']
+        phone = body['phone']
+        profile.name = name
+        profile.email = email
+        profile.phone_number = phone
+        profile.save()
+
+        data = {
+            "fullName": profile.name,
+            "email": profile.email,
+            "phone": profile.phone_number.as_e164,
+            "avatar": {
+                "src": profile.avatar.avatar.url,
+                "alt": "hello alt",
+            }
+        }
+        return JsonResponse(data)
+
+    return HttpResponse(status=405)
+
+
+@csrf_exempt
+@login_required(redirect_field_name='next', login_url='/sign-up/')
+def profile_password(request):
+    if request.method == 'POST':
+        body = json.loads(request.body)
+        new_password = body['newPassword']
+        if new_password:
+            user = User.objects.get(id=request.user.id)
+            user.set_password(new_password)
+            user.save()
+            return HttpResponse(status=200)
+        else:
+            return HttpResponse(status=400)
+    return HttpResponse(status=405)
+
+
+@login_required(redirect_field_name='next', login_url='/sign-up/')
+def profile_avatar(request):
+    profile = get_profile(request)
+    if not profile:
+        return HttpResponse(status=400)
+    elif request.method == 'POST':
+
+        avatar_form = AvatarForm(request.POST, request.FILES)
+        if avatar_form.is_valid():
+            if profile.avatar:
+                profile.avatar.delete()
+            profile.avatar = avatar_form.save()
+            profile.save()
+
+            data = {
+                "src": profile.avatar.avatar.url,
+                "alt": profile.name,
+            }
+            return JsonResponse(data)
+        else:
+            print(avatar_form.errors)
+            return HttpResponse(status=400)
+
+    return HttpResponse(status=405)
+
