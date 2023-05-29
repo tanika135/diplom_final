@@ -68,10 +68,7 @@ def catalog(request):
 
 
 def product(request, id):
-
-    # product = get_product(id)
-    product = get_product(1)
-
+    product = get_product(id)
     if request.method == 'GET':
         product_images = []
         for image in product.images.all():
@@ -81,8 +78,6 @@ def product(request, id):
             })
 
         reviews_on_product = get_reviews(product)
-
-
         data = {
             "id": product.id,
             "category": product.category.id,
