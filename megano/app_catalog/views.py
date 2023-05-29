@@ -80,7 +80,7 @@ def product(request, id):
                 "alt": product.title,
             })
 
-        product_reviews = get_reviews(product)
+        reviews_on_product = get_reviews(product)
 
 
         data = {
@@ -100,7 +100,7 @@ def product(request, id):
                         "name": "Hello world"
                     }
              ],
-            "reviews": product_reviews,
+            "reviews": reviews_on_product,
             "specifications": [
                 {
                     "name": "Size",
@@ -116,8 +116,8 @@ def get_product(product_id):
     product = Product.objects.get(pk=product_id)
     if not product:
         return None
-
-    return product
+    else:
+        return product
 
 
 def get_reviews(product:Product) -> list:
@@ -135,6 +135,7 @@ def get_reviews(product:Product) -> list:
 
 def product_reviews(request, id):
     if request.method == 'POST':
+        data = []
         body = json.loads(request.body)
         author = body['author']
         email = body['email']
