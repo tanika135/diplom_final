@@ -281,24 +281,24 @@ def tags(request):
 	]
 	return JsonResponse(data, safe=False)
 
-def productReviews(request, id):
-	data = [
-    {
-      "author": "Annoying Orange",
-      "email": "no-reply@mail.ru",
-      "text": "rewrewrwerewrwerwerewrwerwer",
-      "rate": 4,
-      "date": "2023-05-05 12:12"
-    },
-    {
-      "author": "2Annoying Orange",
-      "email": "no-reply@mail.ru",
-      "text": "rewrewrwerewrwerwerewrwerwer",
-      "rate": 5,
-      "date": "2023-05-05 12:12"
-    },
-	]
-	return JsonResponse(data, safe=False)
+# def productReviews(request, id):
+# 	data = [
+#     {
+#       "author": "Annoying Orange",
+#       "email": "no-reply@mail.ru",
+#       "text": "rewrewrwerewrwerwerewrwerwer",
+#       "rate": 4,
+#       "date": "2023-05-05 12:12"
+#     },
+#     {
+#       "author": "2Annoying Orange",
+#       "email": "no-reply@mail.ru",
+#       "text": "rewrewrwerewrwerwerewrwerwer",
+#       "rate": 5,
+#       "date": "2023-05-05 12:12"
+#     },
+# 	]
+# 	return JsonResponse(data, safe=False)
 
 
 def orders(request):

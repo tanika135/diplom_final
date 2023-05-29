@@ -1,9 +1,10 @@
+import json
+from datetime import datetime
 from random import randrange
 
-from django.http import JsonResponse
-from django.shortcuts import render
+from django.http import JsonResponse, HttpResponse
 
-from app_catalog.models import Product, Category
+from app_catalog.models import Product, Category, ProductReviews
 
 
 def categories(request):
@@ -28,8 +29,6 @@ def categories(request):
             #     "src": "https://proprikol.ru/wp-content/uploads/2020/12/kartinki-ryabchiki-14.jpg",
             #     "alt": "Image alt string"
         })
-
-
 
     return JsonResponse(data, safe=False)
 
@@ -81,6 +80,8 @@ def product(request, id):
                 "alt": product.title,
             })
 
+        product_reviews = get_reviews(product)
+
 
         data = {
             "id": product.id,
@@ -99,15 +100,7 @@ def product(request, id):
                         "name": "Hello world"
                     }
              ],
-            "reviews": [
-                {
-                    "author": "Annoying Orange",
-                    "email": "no-reply@mail.ru",
-                    "text": "rewrewrwerewrwerwerewrwerwer",
-                    "rate": 4,
-                    "date": "2023-05-05 12:12"
-                }
-            ],
+            "reviews": product_reviews,
             "specifications": [
                 {
                     "name": "Size",
@@ -126,4 +119,34 @@ def get_product(product_id):
 
     return product
 
+
+def get_reviews(product:Product) -> list:
+    reviews = []
+    for review in ProductReviews.objects.filter(product=product):
+        reviews.append({
+            "author": review.author,
+            "email": review.email,
+            "text": review.text,
+            "rate": review.rate,
+            "date": review.date,
+        })
+    return reviews
+
+
+def product_reviews(request, id):
+    if request.method == 'POST':
+        body = json.loads(request.body)
+        author = body['author']
+        email = body['email']
+        text = body['text']
+        rate = body['rate']
+
+        product = Product.objects.get(pk=id)
+        if product:
+            review = ProductReviews.objects.create(author=author, email=email, text=text, rate=rate, product=product)
+            data = get_reviews(product)
+
+        return JsonResponse(data, safe=False)
+    else:
+        return HttpResponse(status=400)
 

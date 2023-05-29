@@ -1,6 +1,8 @@
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 
+from app_auth.models import Profile
+
 
 def images_dir_path(instance: "Product", filename: str) -> str:
     return "products/product_{pk}/{filename}".format(
@@ -12,6 +14,16 @@ def images_dir_path(instance: "Product", filename: str) -> str:
 class Images(models.Model):
     images = models.ImageField(upload_to=images_dir_path, null=True, max_length=255)
     product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='images')
+
+
+class ProductReviews(models.Model):
+    author = models.CharField(max_length=100, default='')
+    email = models.CharField(max_length=100, default='')
+    text = models.TextField(max_length=1000, null=False, blank=True)
+    rate = models.PositiveIntegerField(default=0)
+    date = models.DateTimeField(auto_now_add=True)
+    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='reviews')
+    # profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='reviews')
 
 
 class Product(models.Model):
@@ -29,8 +41,11 @@ class Product(models.Model):
     # images = models.ForeignKey(Images, on_delete=models.CASCADE, null=True, related_name='product')
     # images = models.ImageField(upload_to='product_images_directory_path')
     # tags
-    # reviews
     # rating
+
+
+class Tag(models.Model):
+    name = models.CharField(max_length=100)
 
 
 class Category(MPTTModel):
