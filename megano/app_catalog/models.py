@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Sum
 from mptt.models import MPTTModel, TreeForeignKey
 
 from app_auth.models import Profile
@@ -24,6 +25,17 @@ class ProductReviews(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='reviews')
 
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            res = self.product.reviews.all().aggregate(Sum('rate'))
+            rate_sum = res['rate__sum']
+            rate_num = self.product.reviews.all().count()
+            rate_sum += int(self.rate)
+            rate_num += 1
+            self.product.rating = round((rate_sum/rate_num), 1)
+            self.product.save()
+        super(ProductReviews, self).save(*args, **kwargs)
+
 
 class Product(models.Model):
     class Meta:
@@ -38,7 +50,7 @@ class Product(models.Model):
     freeDelivery = models.BooleanField(default=False)
     category = TreeForeignKey('Category', on_delete=models.PROTECT, related_name='products')
     tags = models.ManyToManyField('Tag', null=True)
-    # tags
+    rating = models.DecimalField(default=3, max_digits=2, decimal_places=1)
     # rating
 
 

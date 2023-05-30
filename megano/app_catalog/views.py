@@ -165,7 +165,7 @@ def get_product_data(product):
                 "value": "XL"
             }
         ],
-        "rating": 4.6
+        "rating": product.rating
     }
     return data
 
@@ -194,7 +194,7 @@ def product_reviews(request, id):
 
         product = Product.objects.get(pk=id)
         if product:
-            review = ProductReviews.objects.create(author=author, email=email, text=text, rate=rate, product=product)
+            ProductReviews.objects.create(author=author, email=email, text=text, rate=rate, product=product)
             data = get_reviews(product)
 
         return JsonResponse(data, safe=False)
