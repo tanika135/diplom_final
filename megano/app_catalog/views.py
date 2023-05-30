@@ -68,6 +68,10 @@ def catalog(request):
     if "filter[available]" in params and params.get('filter[available]') == 'true':
         filter_args['count__gt'] = 0
 
+    if 'tags[]' in params:
+        print(params.getlist('tags[]'))
+        filter_args['tags__id__in'] = params.getlist('tags[]')
+
     sorting = 'price'
     if 'sort' in params:
         if params.get('sortType') == 'inc':
@@ -199,17 +203,11 @@ def product_reviews(request, id):
 
 
 def tags(request):
+    data = []
     if request.method == 'GET':
-        data = []
-        for tag in Tag.objects.all():
+        for tag in Tag.objects.filter(popular=True):
             data.append({
                 "id": tag.id,
                 "name": tag.name
             })
-
-    # data = [
-    #     {"id": 0, "name": 'tag0'},
-    #     {"id": 1, "name": 'tag1'},
-    #     {"id": 2, "name": 'tag2'},
-    # ]
     return JsonResponse(data, safe=False)
