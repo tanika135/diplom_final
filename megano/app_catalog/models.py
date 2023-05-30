@@ -5,9 +5,9 @@ from mptt.models import MPTTModel, TreeForeignKey
 from app_auth.models import Profile
 
 
-def images_dir_path(instance: "Product", filename: str) -> str:
+def images_dir_path(instance: "Images", filename: str) -> str:
     return "products/product_{pk}/{filename}".format(
-        pk=instance.pk,
+        pk=instance.product.pk,
         filename=filename
     )
 
@@ -26,6 +26,9 @@ class ProductReviews(models.Model):
     product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='reviews')
 
     def save(self, *args, **kwargs):
+        """
+        Пересчет рейтинга после добавления нового отзыва.
+        """
         if not self.pk:
             res = self.product.reviews.all().aggregate(Sum('rate'))
             rate_sum = res['rate__sum']
@@ -66,6 +69,7 @@ class Category(MPTTModel):
     title = models.CharField(max_length=100)
     parent = TreeForeignKey('self', on_delete=models.PROTECT, null=True, blank=True,
                             related_name='children', db_index=True)
+    image = models.ImageField(upload_to='categories', null=True, max_length=255)
 
     def __str__(self):
         return self.title

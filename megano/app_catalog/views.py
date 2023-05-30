@@ -9,36 +9,55 @@ from app_catalog.models import Product, Category, ProductReviews, Tag
 from django.db.models import Count
 
 
+def get_category_data(category):
+    """
+    Формирование словаря с вложенностью категорий.
+    :param category:
+    :return:
+    """
+    data = {}
+    subcats = []
+    for subcategory in category.children.all():
+        subcats.append(get_category_data(subcategory))
+
+    if category.image:
+        image = category.image.url
+    else:
+        image = '/media/no_image.svg'
+
+    cat_data = {
+        "id": category.id,
+        "title": category.title,
+        "subcategories": subcats,
+        "image": {
+            "src": image,
+            "alt": category.title
+        }
+    }
+
+    return cat_data
+
+
 def categories(request):
+    """
+    Функция представления категорий.
+    :param request:
+    :return:
+    """
     if request.method == 'GET':
         categories = Category.objects.filter(parent=None)
         data = []
         for category in categories:
-            subcategories = []
-            for subcategory in category.children.all():
-                subcategories.append({
-                    "id": subcategory.id,
-                    "title": subcategory.title,
-                    "image": {
-                        "src": "https://proprikol.ru/wp-content/uploads/2020/12/kartinki-ryabchiki-14.jpg",
-                        "alt": "Image alt string"
-                    }
-                })
-
-            data.append({
-                "id": category.id,
-                "title": category.title,
-                "subcategories": subcategories,
-                "image": {
-                    "src": "https://proprikol.ru/wp-content/uploads/2020/12/kartinki-ryabchiki-14.jpg",
-                    "alt": "Image alt string"
-                }
-            })
-
+            data.append(get_category_data(category))
         return JsonResponse(data, safe=False)
 
 
 def catalog(request):
+    """
+    Фильтрация и сортировка товаров в каталоге.
+    :param request:
+    :return:
+    """
     params = request.GET
 
     page_size = 20
@@ -69,8 +88,7 @@ def catalog(request):
         filter_args['count__gt'] = 0
 
     if 'tags[]' in params:
-        print(params.getlist('tags[]'))
-        filter_args['tags__id__in'] = params.getlist('tags[]')
+         filter_args['tags__id__in'] = params.getlist('tags[]')
 
     sorting = 'price'
     if 'sort' in params:
@@ -87,7 +105,8 @@ def catalog(request):
     total = products.count()
     product_list = []
 
-    for product in products[start:end]:
+    page_products = products[start:end]
+    for product in page_products:
         product_data = get_product_data(product)
         product_data["reviews"] = product.reviews.count()
         product_list.append(
@@ -103,6 +122,12 @@ def catalog(request):
 
 
 def product(request, id):
+    """
+    Представление карточки товара.
+    :param request:
+    :param id:
+    :return:
+    """
     product = get_product(id)
     if request.method == 'GET':
         data = get_product_data(product)
@@ -113,6 +138,10 @@ def product(request, id):
 
 
 def get_product(product_id):
+    """
+    Загрузка товара из базы по id.
+
+    """
     product = Product.objects.get(pk=product_id)
     if not product:
         return None
@@ -121,6 +150,11 @@ def get_product(product_id):
 
 
 def get_product_images(product):
+    """
+    Загрузка изображений.
+    :param product:
+    :return:
+    """
     product_images = []
     for image in product.images.all():
         product_images.append({
@@ -129,13 +163,18 @@ def get_product_images(product):
         })
     if not product_images:
         product_images.append({
-            "src": '/media/no_image.jpg',
+            "src": '/media/no_image.svg',
             "alt": product.title,
         })
     return product_images
 
 
 def get_product_tags(product):
+    """
+    Загрузка тегов.
+    :param product:
+    :return:
+    """
     product_tags = []
     for tag in product.tags.all():
         product_tags.append({
@@ -146,6 +185,11 @@ def get_product_tags(product):
 
 
 def get_product_data(product):
+    """
+    Формирование словаря с товаром.
+    :param product:
+    :return:
+    """
     product_images = get_product_images(product)
     data = {
         "id": product.id,
@@ -171,8 +215,11 @@ def get_product_data(product):
 
 
 def get_reviews(product:Product) -> list:
+    """
+    Формирование словаря с отзывом к товару.
+    """
     reviews = []
-    for review in ProductReviews.objects.filter(product=product):
+    for review in product.reviews.all():
         reviews.append({
             "author": review.author,
             "email": review.email,
@@ -184,6 +231,9 @@ def get_reviews(product:Product) -> list:
 
 
 def product_reviews(request, id):
+    """
+    Добавление отзывов.
+    """
     if request.method == 'POST':
         data = []
         body = json.loads(request.body)
@@ -203,6 +253,9 @@ def product_reviews(request, id):
 
 
 def tags(request):
+    """
+    Функция для получения популярных тегов.
+    """
     data = []
     if request.method == 'GET':
         for tag in Tag.objects.filter(popular=True):
