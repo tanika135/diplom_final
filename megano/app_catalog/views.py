@@ -17,25 +17,48 @@ def categories(request):
                 subcategories.append({
                     "id": subcategory.id,
                     "title": subcategory.title,
-                    # "image": {
-                    #     "src": "https://proprikol.ru/wp-content/uploads/2020/12/kartinki-ryabchiki-14.jpg",
-                    #     "alt": "Image alt string"
+                    "image": {
+                        "src": "https://proprikol.ru/wp-content/uploads/2020/12/kartinki-ryabchiki-14.jpg",
+                        "alt": "Image alt string"
+                    }
                 })
 
             data.append({
                 "id": category.id,
                 "title": category.title,
                 "subcategories": subcategories,
-                # "image": {
-                #     "src": "https://proprikol.ru/wp-content/uploads/2020/12/kartinki-ryabchiki-14.jpg",
-                #     "alt": "Image alt string"
+                "image": {
+                    "src": "https://proprikol.ru/wp-content/uploads/2020/12/kartinki-ryabchiki-14.jpg",
+                    "alt": "Image alt string"
+                }
             })
 
         return JsonResponse(data, safe=False)
 
 
 def catalog(request):
-    products = Product.objects.all()
+    # filter[name]:
+    # filter[available]: true
+    # currentPage: 1
+    # sort: price
+    # sortType: inc
+    # limit: 20
+
+    filterargs = {}
+    if "filter[minPrice]" in request.GET:
+        filterargs['price__gte'] = request.GET.get('filter[minPrice]')
+
+    if "filter[maxPrice]" in request.GET:
+        filterargs['price__lte'] = request.GET.get('filter[maxPrice]')
+
+    if "filter[freeDelivery]" in request.GET and request.GET.get('filter[freeDelivery]') == 'true':
+        filterargs['freeDelivery'] = True
+
+    if "filter[available]" in request.GET and request.GET.get('filter[available]') == 'true':
+        filterargs['count__gt'] = 0
+
+    print(filterargs)
+    products = Product.objects.filter(**filterargs)
     product_list = []
     for product in products:
         product_data = get_product_data(product)
