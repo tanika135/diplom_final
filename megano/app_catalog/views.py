@@ -4,7 +4,7 @@ from random import randrange
 
 from django.http import JsonResponse, HttpResponse
 
-from app_catalog.models import Product, Category, ProductReviews
+from app_catalog.models import Product, Category, ProductReviews, Tag
 
 
 def categories(request):
@@ -77,6 +77,13 @@ def product(request, id):
                 "alt": product.title,
             })
 
+        product_tags = []
+        for tag in product.tags.all():
+            product_tags.append({
+                'id': tag.pk,
+                'name': tag.name
+            })
+
         reviews_on_product = get_reviews(product)
         data = {
             "id": product.id,
@@ -89,12 +96,7 @@ def product(request, id):
             "fullDescription": product.fullDescription,
             "freeDelivery": product.freeDelivery,
             "images": product_images,
-            "tags": [
-                    {
-                        "id": 0,
-                        "name": "Hello world"
-                    }
-             ],
+            "tags": product_tags,
             "reviews": reviews_on_product,
             "specifications": [
                 {
@@ -146,3 +148,19 @@ def product_reviews(request, id):
     else:
         return HttpResponse(status=400)
 
+
+def tags(request):
+    if request.method == 'GET':
+        data = []
+        for tag in Tag.objects.all():
+            data.append({
+                "id": tag.id,
+                "name": tag.name
+            })
+
+    # data = [
+    #     {"id": 0, "name": 'tag0'},
+    #     {"id": 1, "name": 'tag1'},
+    #     {"id": 2, "name": 'tag2'},
+    # ]
+    return JsonResponse(data, safe=False)

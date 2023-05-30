@@ -23,7 +23,6 @@ class ProductReviews(models.Model):
     rate = models.PositiveIntegerField(default=0)
     date = models.DateTimeField(auto_now_add=True)
     product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='reviews')
-    # profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='reviews')
 
 
 class Product(models.Model):
@@ -38,14 +37,16 @@ class Product(models.Model):
     fullDescription = models.TextField(max_length=1000, null=False, blank=True)
     freeDelivery = models.BooleanField(default=False)
     category = TreeForeignKey('Category', on_delete=models.PROTECT, related_name='products')
-    # images = models.ForeignKey(Images, on_delete=models.CASCADE, null=True, related_name='product')
-    # images = models.ImageField(upload_to='product_images_directory_path')
+    tags = models.ManyToManyField('Tag', null=True)
     # tags
     # rating
 
 
 class Tag(models.Model):
     name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
 
 
 class Category(MPTTModel):

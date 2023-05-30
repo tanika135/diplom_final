@@ -273,13 +273,7 @@ def orders(request):
 
 
 
-def tags(request):
-	data = [
-		{ "id": 0, "name": 'tag0' },
-		{ "id": 1, "name": 'tag1' },
-		{ "id": 2, "name": 'tag2' },
-	]
-	return JsonResponse(data, safe=False)
+
 
 # def productReviews(request, id):
 # 	data = [
