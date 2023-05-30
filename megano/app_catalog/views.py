@@ -1,10 +1,12 @@
 import json
 from datetime import datetime
+from math import ceil
 from random import randrange
 
 from django.http import JsonResponse, HttpResponse
 
 from app_catalog.models import Product, Category, ProductReviews, Tag
+from django.db.models import Count
 
 
 def categories(request):
@@ -37,30 +39,51 @@ def categories(request):
 
 
 def catalog(request):
-    # filter[name]:
-    # filter[available]: true
-    # currentPage: 1
-    # sort: price
-    # sortType: inc
-    # limit: 20
+    params = request.GET
 
-    filterargs = {}
-    if "filter[minPrice]" in request.GET:
-        filterargs['price__gte'] = request.GET.get('filter[minPrice]')
+    page_size = 20
+    if "limit" in params:
+        page_size = int(params['limit'])
 
-    if "filter[maxPrice]" in request.GET:
-        filterargs['price__lte'] = request.GET.get('filter[maxPrice]')
+    filter_args = {}
 
-    if "filter[freeDelivery]" in request.GET and request.GET.get('filter[freeDelivery]') == 'true':
-        filterargs['freeDelivery'] = True
+    cur_page = 1
+    if "currentPage" in params:
+        cur_page = int(params['currentPage'])
+    start = (cur_page - 1) * page_size
+    end = cur_page * page_size
 
-    if "filter[available]" in request.GET and request.GET.get('filter[available]') == 'true':
-        filterargs['count__gt'] = 0
+    if "filter[name]" in params:
+        filter_args['title__icontains'] = params.get('filter[name]')
 
-    print(filterargs)
-    products = Product.objects.filter(**filterargs)
+    if "filter[minPrice]" in params:
+        filter_args['price__gte'] = params.get('filter[minPrice]')
+
+    if "filter[maxPrice]" in params:
+        filter_args['price__lte'] = params.get('filter[maxPrice]')
+
+    if "filter[freeDelivery]" in params and params.get('filter[freeDelivery]') == 'true':
+        filter_args['freeDelivery'] = True
+
+    if "filter[available]" in params and params.get('filter[available]') == 'true':
+        filter_args['count__gt'] = 0
+
+    sorting = 'price'
+    if 'sort' in params:
+        if params.get('sortType') == 'inc':
+            order = ''
+        else:
+            order = '-'
+        sort = params.get('sort')
+        if sort == 'reviews':
+            sort = 'num_reviews'
+        sorting = order + sort
+
+    products = Product.objects.filter(**filter_args).annotate(num_reviews=Count('reviews')).order_by(sorting)
+    total = products.count()
     product_list = []
-    for product in products:
+
+    for product in products[start:end]:
         product_data = get_product_data(product)
         product_data["reviews"] = product.reviews.count()
         product_list.append(
@@ -69,8 +92,8 @@ def catalog(request):
 
     data = {
         "items": product_list,
-        "currentPage": randrange(1, 4),
-        "lastPage": 3
+        "currentPage": cur_page,
+        "lastPage": ceil(total/page_size)
     }
     return JsonResponse(data)
 
