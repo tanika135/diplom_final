@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'mptt',
     'app_auth',
     'app_catalog',
+    'app_basket',
+    'app_order',
     'api',
 ]
 
