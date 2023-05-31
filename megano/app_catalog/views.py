@@ -264,3 +264,80 @@ def tags(request):
                 "name": tag.name
             })
     return JsonResponse(data, safe=False)
+
+
+def products_popular(request):
+
+    data = [
+        {
+            "id": "123",
+            "category": 55,
+            "price": 500.67,
+            "count": 12,
+            "date": "Thu Feb 09 2023 21:39:52 GMT+0100 (Central European Standard Time)",
+            "title": "video card",
+            "description": "description of the product",
+            "freeDelivery": True,
+            "images": [
+                    {
+                        "src": "https://proprikol.ru/wp-content/uploads/2020/12/kartinki-ryabchiki-14.jpg",
+                        "alt": "hello alt",
+                    }
+             ],
+            "tags": [
+                {
+                    "id": 0,
+                    "name": "Hello world"
+                }
+             ],
+            "reviews": 5,
+            "rating": 4.6
+        }
+    ]
+    return JsonResponse(data, safe=False)
+
+
+def products_limited(request):
+    if request.method == 'GET':
+        limited_edition = []
+        for limited in Product.objects.filter(products_limited=True):
+            limited_edition.append({
+                "id": limited.id,
+                "category": limited.category.id,
+                "price": limited.price,
+                "count": limited.count,
+                "date": limited.date,
+                "title": limited.title,
+                "description": limited.description,
+                "freeDelivery": limited.freeDelivery,
+                "images": get_product_images(limited),
+                "tags": get_product_tags(limited),
+                "rating": limited.rating
+            })
+        # limited_edition = [
+        #     {
+        #         "id": "123",
+        #         "category": 55,
+        #         "price": 500.67,
+        #         "count": 12,
+        #         "date": "Thu Feb 09 2023 21:39:52 GMT+0100 (Central European Standard Time)",
+        #         "title": "video card",
+        #         "description": "description of the product",
+        #         "freeDelivery": True,
+        #         "images": [
+        #                 {
+        #                     "src": "https://proprikol.ru/wp-content/uploads/2020/12/kartinki-ryabchiki-14.jpg",
+        #                     "alt": "hello alt",
+        #                 }
+        #          ],
+        #         "tags": [
+        #                 {
+        #                     "id": 0,
+        #                     "name": "Hello world"
+        #                 }
+        #         ],
+        #         "reviews": 5,
+        #         "rating": 4.6
+        #     }
+        # ]
+        return JsonResponse(limited_edition, safe=False)
