@@ -22,46 +22,25 @@ def basket(request):
 
     elif request.method == "POST":
         body = json.loads(request.body)
-        id = body['id']
+        product_id = body['id']
         count = int(body['count'])
 
-        product = Product.objects.get(pk=id)
+        product = Product.objects.get(pk=product_id)
         if not product:
             return HttpResponse(status=400)
 
         cart.add(product, count)
-        cart.save()
         data = get_cart_data(cart)
         return JsonResponse(data, safe=False)
 
     elif request.method == "DELETE":
         body = json.loads(request.body)
-        id = body['id']
-        print('[DELETE] /api/basket/')
-        data = [
-            {
-                "id": id,
-                "category": 55,
-                "price": 500.67,
-                "count": 11,
-                "date": "Thu Feb 09 2023 21:39:52 GMT+0100 (Central European Standard Time)",
-                "title": "video card",
-                "description": "description of the product",
-                "freeDelivery": True,
-                "images": [
-                    {
-                        "src": "https://proprikol.ru/wp-content/uploads/2020/12/kartinki-ryabchiki-14.jpg",
-                        "alt": "hello alt",
-                    }
-                ],
-                "tags": [
-                    {
-                        "id": 0,
-                        "name": "Hello world"
-                    }
-                ],
-                "reviews": 5,
-                "rating": 4.6
-            }
-        ]
+        product_id = body['id']
+
+        product = Product.objects.get(pk=product_id)
+        if not product:
+            return HttpResponse(status=400)
+
+        cart.remove(product)
+        data = get_cart_data(cart)
         return JsonResponse(data, safe=False)

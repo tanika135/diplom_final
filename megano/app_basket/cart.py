@@ -16,6 +16,9 @@ class Cart(object):
     def add(self, product, quantity=1, update_quantity=False):
         """ Добавить продукт в корзину или обновить его количество. """
         product_id = str(product.id)
+        if not product_id in self.cart:
+            self.cart[product_id] = 0
+
         if update_quantity:
             self.cart[product_id] = quantity
         else:
