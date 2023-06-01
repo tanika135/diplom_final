@@ -8,6 +8,7 @@ from .views import (
     tags,
     products_popular,
     products_limited,
+    banners,
 )
 
 
@@ -21,4 +22,5 @@ urlpatterns = [
     path('tags', tags, name='tags'),
     path('products/popular', products_popular, name='products_popular'),
     path('products/limited', products_limited, name='products_limited'),
+    path('banners', banners, name='banners'),
 ]

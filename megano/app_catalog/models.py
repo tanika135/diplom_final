@@ -55,6 +55,7 @@ class Product(models.Model):
     tags = models.ManyToManyField('Tag', null=True)
     rating = models.DecimalField(default=3, max_digits=2, decimal_places=1)
     products_limited = models.BooleanField(default=False)
+    banner = models.BooleanField(default=False)
 
 
 class Tag(models.Model):

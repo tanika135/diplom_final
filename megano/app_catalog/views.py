@@ -295,7 +295,7 @@ def products_popular(request):
     #         "rating": 4.6
     #     }
     # ]
-    return JsonResponse(data, safe=False)
+        return JsonResponse(popular_products, safe=False)
 
 
 def products_limited(request):
@@ -342,3 +342,23 @@ def products_limited(request):
         #     }
         # ]
         return JsonResponse(limited_edition, safe=False)
+
+
+def banners(request):
+    if request.method == 'GET':
+        data = []
+        for banner in Product.objects.filter(banner=True):
+            data.append({
+                "id": banner.id,
+                "category": banner.category.id,
+                "price": banner.price,
+                "count": banner.count,
+                "date": banner.date,
+                "title": banner.title,
+                "description": banner.description,
+                "freeDelivery": banner.freeDelivery,
+                "images": get_product_images(banner),
+                "tags": get_product_tags(banner),
+                "rating": banner.rating,
+            })
+        return JsonResponse(data, safe=False)
