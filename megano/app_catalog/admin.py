@@ -1,7 +1,7 @@
 from django.contrib import admin
 from mptt.admin import MPTTModelAdmin
 
-from app_catalog.models import Product, Category, Images, Tag, ProductReviews
+from app_catalog.models import Product, Category, Images, Tag, ProductReviews, Specifications
 
 
 class ImageInline(admin.TabularInline):
@@ -26,7 +26,12 @@ class CategoryAdmin(MPTTModelAdmin):
     list_display = ['id', 'title']
 
 
+class SpecificationsAdmin(admin.ModelAdmin):
+    list_display = ['name', 'value']
+
+
 admin.site.register(Product, ProductsAdmin)
 admin.site.register(ProductReviews, ProductReviewsAdmin)
 admin.site.register(Tag, TagsAdmin)
 admin.site.register(Category, CategoryAdmin)
+admin.site.register(Specifications, SpecificationsAdmin)

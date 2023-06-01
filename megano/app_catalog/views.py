@@ -5,7 +5,7 @@ from random import randrange
 
 from django.http import JsonResponse, HttpResponse
 
-from app_catalog.models import Product, Category, ProductReviews, Tag
+from app_catalog.models import Product, Category, ProductReviews, Tag, Specifications
 from django.db.models import Count
 
 
@@ -184,6 +184,20 @@ def get_product_tags(product):
     return product_tags
 
 
+def tags(request):
+    """
+    Функция для получения популярных тегов.
+    """
+    data = []
+    if request.method == 'GET':
+        for tag in Tag.objects.filter(popular=True):
+            data.append({
+                "id": tag.id,
+                "name": tag.name
+            })
+    return JsonResponse(data, safe=False)
+
+
 def get_product_data(product):
     """
     Формирование словаря с товаром.
@@ -203,12 +217,7 @@ def get_product_data(product):
         "freeDelivery": product.freeDelivery,
         "images": product_images,
         "tags": get_product_tags(product),
-        "specifications": [
-            {
-                "name": "Size",
-                "value": "XL"
-            }
-        ],
+        "specifications": get_specifications(product),
         "rating": product.rating
     }
     return data
@@ -252,16 +261,31 @@ def product_reviews(request, id):
         return HttpResponse(status=400)
 
 
-def tags(request):
+def get_specifications(product):
     """
-    Функция для получения популярных тегов.
+    Формирование словаря с характеристиками к товару.
+    """
+    specifications = []
+    for specification in product.specifications.all():
+        specifications.append({
+            "id": specification.id,
+            'name': specification.name,
+            'value': specification.value
+        })
+    return specifications
+
+
+def product_specifications(request):
+    """
+    Добавление характеристик товара.
     """
     data = []
     if request.method == 'GET':
-        for tag in Tag.objects.filter(popular=True):
+        for specification in Specifications.objects.all():
             data.append({
-                "id": tag.id,
-                "name": tag.name
+                "id": specification.id,
+                "name": specification.name,
+                "value": specification.value
             })
     return JsonResponse(data, safe=False)
 
@@ -315,32 +339,6 @@ def products_limited(request):
                 "tags": get_product_tags(limited),
                 "rating": limited.rating
             })
-        # limited_edition = [
-        #     {
-        #         "id": "123",
-        #         "category": 55,
-        #         "price": 500.67,
-        #         "count": 12,
-        #         "date": "Thu Feb 09 2023 21:39:52 GMT+0100 (Central European Standard Time)",
-        #         "title": "video card",
-        #         "description": "description of the product",
-        #         "freeDelivery": True,
-        #         "images": [
-        #                 {
-        #                     "src": "https://proprikol.ru/wp-content/uploads/2020/12/kartinki-ryabchiki-14.jpg",
-        #                     "alt": "hello alt",
-        #                 }
-        #          ],
-        #         "tags": [
-        #                 {
-        #                     "id": 0,
-        #                     "name": "Hello world"
-        #                 }
-        #         ],
-        #         "reviews": 5,
-        #         "rating": 4.6
-        #     }
-        # ]
         return JsonResponse(limited_edition, safe=False)
 
 
