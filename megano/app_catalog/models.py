@@ -57,6 +57,7 @@ class Product(models.Model):
     rating = models.DecimalField(default=3, max_digits=2, decimal_places=1)
     products_limited = models.BooleanField(default=False)
     banner = models.BooleanField(default=False)
+    sort = models.PositiveIntegerField(default=100)
 
 
 class Tag(models.Model):
@@ -82,6 +83,6 @@ class Specifications(models.Model):
     value = models.CharField(max_length=100)
 
     def __str__(self):
-        return self.name
+        return self.value
 
 

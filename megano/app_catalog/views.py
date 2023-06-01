@@ -293,6 +293,21 @@ def product_specifications(request):
 def products_popular(request):
     if request.method == 'GET':
         popular_products = []
+        for popular in Product.objects.all().order_by('sort')[:8]:
+            popular_products.append({
+                "id": popular.id,
+                "category": popular.category.id,
+                "price": popular.price,
+                "count": popular.count,
+                "date": popular.date,
+                "title": popular.title,
+                "description": popular.description,
+                "freeDelivery": popular.freeDelivery,
+                "images": get_product_images(popular),
+                "tags": get_product_tags(popular),
+                "rating": popular.rating
+            })
+        return JsonResponse(popular_products, safe=False)
     # data = [
     #     {
     #         "id": "123",
@@ -319,13 +334,13 @@ def products_popular(request):
     #         "rating": 4.6
     #     }
     # ]
-        return JsonResponse(popular_products, safe=False)
+    #     return JsonResponse(popular_products, safe=False)
 
 
 def products_limited(request):
     if request.method == 'GET':
         limited_edition = []
-        for limited in Product.objects.filter(products_limited=True):
+        for limited in Product.objects.filter(products_limited=True)[:8]:
             limited_edition.append({
                 "id": limited.id,
                 "category": limited.category.id,
