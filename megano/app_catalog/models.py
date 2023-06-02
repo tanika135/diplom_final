@@ -53,8 +53,11 @@ class Product(models.Model):
     freeDelivery = models.BooleanField(default=False)
     category = TreeForeignKey('Category', on_delete=models.PROTECT, related_name='products')
     tags = models.ManyToManyField('Tag', null=True)
+    specifications = models.ManyToManyField('Specifications', null=True)
     rating = models.DecimalField(default=3, max_digits=2, decimal_places=1)
-    # rating
+    products_limited = models.BooleanField(default=False)
+    banner = models.BooleanField(default=False)
+    sort = models.PositiveIntegerField(default=100)
 
 
 class Tag(models.Model):
@@ -73,3 +76,13 @@ class Category(MPTTModel):
 
     def __str__(self):
         return self.title
+
+
+class Specifications(models.Model):
+    name = models.CharField(max_length=100)
+    value = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.value
+
+
