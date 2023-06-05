@@ -4,19 +4,21 @@ from django.http import JsonResponse, HttpResponse
 
 from app_catalog.models import Product
 from app_catalog.views import get_product_data
-from app_order.models import Order, OrderItems
+from app_order.models import Order, OrderItems, OrderStatus
 
 
 def orders(request):
     if request.method == "POST":
         '''вызывается при нажатии оформить заказ в корзине'''
-        new_order = Order.objects.create()
-        items = json.loads(request.body)
-        product_ids = [item["id"] for item in items]
+        status = OrderStatus.objects.get(code='new')
+        new_order = Order.objects.create(status=status, user=request.user)
 
-        products = Product.objects.filter(id__in=product_ids)
-        for product in products:
-            OrderItems.objects.create(order=new_order, product=product)
+        items = json.loads(request.body)
+        for item in items:
+            product_id = int(item["id"])
+            product_count = int(item["count"])
+            product = Product.objects.get(pk=product_id)
+            OrderItems.objects.create(order=new_order, product=product, count=product_count, price=product.price)
 
         data = {
           "orderId": new_order.pk
@@ -24,86 +26,8 @@ def orders(request):
         return JsonResponse(data, safe=False)
     elif request.method == 'GET':
         '''вызывается в профиле на странице списка заказов'''
-        data = [
-            {
-                "id": 123,
-                "createdAt": "2023-05-05 12:12",
-                "fullName": "Annoying Orange",
-                "email": "no-reply@mail.ru",
-                "phone": "88002000600",
-                "deliveryType": "free",
-                "paymentType": "online",
-                "totalCost": 567.8,
-                "status": "accepted",
-                "city": "Moscow",
-                "address": "red square 1",
-                "products": [
-                    {
-                        "id": 123,
-                        "category": 55,
-                        "price": 500.67,
-                        "count": 12,
-                        "date": "Thu Feb 09 2023 21:39:52 GMT+0100 (Central European Standard Time)",
-                        "title": "video card",
-                        "description": "description of the product",
-                        "freeDelivery": True,
-                        "images": [
-                            {
-                                "src": "https://proprikol.ru/wp-content/uploads/2020/12/kartinki-ryabchiki-14.jpg",
-                                "alt": "Image alt string"
-                            }
-                        ],
-                        "tags": [
-                            {
-                                "id": 12,
-                                "name": "Gaming"
-                            }
-                        ],
-                        "reviews": 5,
-                        "rating": 4.6
-                    }
-                ]
-            },
-            {
-                "id": 123,
-                "createdAt": "2023-05-05 12:12",
-                "fullName": "Annoying Orange",
-                "email": "no-reply@mail.ru",
-                "phone": "88002000600",
-                "deliveryType": "free",
-                "paymentType": "online",
-                "totalCost": 567.8,
-                "status": "accepted",
-                "city": "Moscow",
-                "address": "red square 1",
-                "products": [
-                    {
-                        "id": 123,
-                        "category": 55,
-                        "price": 500.67,
-                        "count": 12,
-                        "date": "Thu Feb 09 2023 21:39:52 GMT+0100 (Central European Standard Time)",
-                        "title": "video card",
-                        "description": "description of the product",
-                        "freeDelivery": True,
-                        "images": [
-                            {
-                                "src": "https://proprikol.ru/wp-content/uploads/2020/12/kartinki-ryabchiki-14.jpg",
-                                "alt": "Image alt string"
-                            }
-                        ],
-                        "tags": [
-                            {
-                                "id": 12,
-                                "name": "Gaming"
-                            }
-                        ],
-                        "reviews": 5,
-                        "rating": 4.6
-                    }
-                ]
-            }
-        ]
+        orders = Order.objects.filter(user=request.user)
+        data = [get_order_data(order) for order in orders]
         return JsonResponse(data, safe=False)
 
     elif request.method == 'POST':
@@ -115,37 +39,42 @@ def orders(request):
     return HttpResponse(status=500)
 
 
+def get_order_data(order):
+    total_cost = 0
+    product_list = []
+    for item in order.items.all():
+        product = item.product
+        product_data = get_product_data(product)
+        total_cost += item.price * item.count
+        product_data["reviews"] = product.reviews.count()
+        product_list.append(
+            product_data
+        )
+    phone = ''
+    if order.phone:
+        phone = str(order.phone)
+    data = {
+        "id": order.pk,
+        "createdAt": order.created,
+        "fullName": order.full_name,
+        "email": order.email,
+        "phone": phone,
+        "deliveryType": order.get_delivery_type_display(),
+        "paymentType": order.get_payment_type_display(),
+        "totalCost": total_cost,
+        "status": order.status.title,
+        "city": order.city,
+        "address": order.address,
+        "products": product_list
+    }
+    return data
+
+
 def order(request, id):
     if request.method == 'GET':
         '''вызывается при переходе на страницу заполнения полей заказа'''
         order = Order.objects.get(pk=id)
-
-        product_list = []
-        for item in order.items.all():
-            product = item.product
-            product_data = get_product_data(product)
-            product_data["reviews"] = product.reviews.count()
-            product_list.append(
-                product_data
-            )
-
-        #todo: вывести остальные поля из заказа - создать поля в модели
-
-
-        data = {
-            "id": order.pk,
-            "createdAt": order.created,
-            "fullName": "Annoying Orange",
-            "email": "no-reply@mail.ru",
-            "phone": "88002000600",
-            "deliveryType": "free",
-            "paymentType": "online",
-            "totalCost": 567.8,
-            "status": "accepted",
-            "city": "Moscow",
-            "address": "red square 1",
-            "products": product_list
-        }
+        data = get_order_data(order)
         return JsonResponse(data)
 
     elif request.method == 'POST':
@@ -154,10 +83,12 @@ def order(request, id):
         order_fields = json.loads(request.body)
         order = Order.objects.get(pk=id)
         order.full_name = order_fields['fullName']
-        #todo: заполнить остальные поля
-
-
-
+        order.email = order_fields['email']
+        order.phone = order_fields['phone']
+        order.delivery_type = order_fields['deliveryType']
+        order.payment_type = order_fields['paymentType']
+        order.city = order_fields['city']
+        order.address = order_fields['address']
         order.save()
 
         data = {"orderId": order.pk}
@@ -167,5 +98,14 @@ def order(request, id):
 
 
 def payment(request, id):
-    print('qweqwewqeqwe', id)
-    return HttpResponse(status=200)
+    payment_fields = json.loads(request.body)
+    card_num = int(payment_fields["number"][-1:])
+    if card_num % 2 == 0 and card_num != 0:
+        order = Order.objects.get(pk=id)
+        order.status = OrderStatus.objects.get(code='payed')
+        order.save()
+        print('qweqwewqeqwe', id)
+        return HttpResponse(status=200)
+    else:
+        return HttpResponse(status=400)
+

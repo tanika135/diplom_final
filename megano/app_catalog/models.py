@@ -53,7 +53,7 @@ class Product(models.Model):
     freeDelivery = models.BooleanField(default=False)
     category = TreeForeignKey('Category', on_delete=models.PROTECT, related_name='products')
     tags = models.ManyToManyField('Tag', null=True)
-    specifications = models.ManyToManyField('Specifications', null=True)
+    specifications = models.ManyToManyField('Specifications', null=True, related_name='product')
     rating = models.DecimalField(default=3, max_digits=2, decimal_places=1)
     products_limited = models.BooleanField(default=False)
     banner = models.BooleanField(default=False)
