@@ -35,3 +35,4 @@ admin.site.register(ProductReviews, ProductReviewsAdmin)
 admin.site.register(Tag, TagsAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Specifications, SpecificationsAdmin)
+

@@ -58,6 +58,10 @@ class Product(models.Model):
     products_limited = models.BooleanField(default=False)
     banner = models.BooleanField(default=False)
     sort = models.PositiveIntegerField(default=100)
+    # sales = models.BooleanField(default=False)
+    salePrice = models.DecimalField(default=0, max_digits=8, decimal_places=2)
+    saleStart = models.DateTimeField(auto_now_add=False, null=True)
+    saleEnd = models.DateTimeField(auto_now_add=False, null=True)
 
 
 class Tag(models.Model):

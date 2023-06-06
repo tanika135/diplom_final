@@ -20,15 +20,6 @@ class Order(models.Model):
     ]
     delivery_type = models.CharField(max_length=4, choices=DELIVERY_TYPE_CHOICES, default=ORDINARY)
 
-    # FREE = 'FREE'
-    # PAID = 'PAID'
-    #
-    # DELIVERY_TYPE_CHOICES = [
-    #     (FREE, 'free'),
-    #     (PAID, 'paid'),
-    # ]
-    # delivery_type = models.CharField(max_length=4, choices=DELIVERY_TYPE_CHOICES, default=FREE)
-
     ONLINE_CARD = 'OC'
     RANDOM_ACCOUNT = 'RA'
 

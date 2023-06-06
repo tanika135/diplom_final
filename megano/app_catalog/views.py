@@ -308,33 +308,6 @@ def products_popular(request):
                 "rating": popular.rating
             })
         return JsonResponse(popular_products, safe=False)
-    # data = [
-    #     {
-    #         "id": "123",
-    #         "category": 55,
-    #         "price": 500.67,
-    #         "count": 12,
-    #         "date": "Thu Feb 09 2023 21:39:52 GMT+0100 (Central European Standard Time)",
-    #         "title": "video card",
-    #         "description": "description of the product",
-    #         "freeDelivery": True,
-    #         "images": [
-    #                 {
-    #                     "src": "https://proprikol.ru/wp-content/uploads/2020/12/kartinki-ryabchiki-14.jpg",
-    #                     "alt": "hello alt",
-    #                 }
-    #          ],
-    #         "tags": [
-    #             {
-    #                 "id": 0,
-    #                 "name": "Hello world"
-    #             }
-    #          ],
-    #         "reviews": 5,
-    #         "rating": 4.6
-    #     }
-    # ]
-    #     return JsonResponse(popular_products, safe=False)
 
 
 def products_limited(request):
@@ -375,3 +348,47 @@ def banners(request):
                 "rating": banner.rating,
             })
         return JsonResponse(data, safe=False)
+
+
+def sales(request):
+    if request.method == 'GET':
+
+        params = request.GET
+
+        page_size = 8
+
+        filter_args = {
+            'saleStart__lt':datetime.now(),
+            'saleEnd__gt': datetime.now()
+        }
+
+        cur_page = 1
+        if "currentPage" in params:
+            cur_page = int(params['currentPage'])
+
+        start = (cur_page - 1) * page_size
+        end = cur_page * page_size
+
+        products_sale = []
+        format = '%d-%m'
+        sale_products = Product.objects.filter(**filter_args)
+        total = sale_products.count()
+        for product in sale_products[start:end]:
+            products_sale.append({
+                "id": product.id,
+                "price": product.price,
+                "salePrice": product.salePrice,
+                "dateFrom": product.saleStart.strftime(format),
+                "dateTo": product.saleEnd.strftime(format),
+                "title": product.title,
+                "images": get_product_images(product),
+            })
+
+        data = {
+            'items': products_sale,
+            'currentPage': cur_page,
+            'lastPage': ceil(total/page_size),
+        }
+        return JsonResponse(data, safe=False)
+    else:
+        return HttpResponse(status=400)
